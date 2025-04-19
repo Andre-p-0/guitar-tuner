@@ -1,0 +1,117 @@
+* {
+    font-family: Arial, Helvetica, sans-serif;
+    box-sizing: border-box;
+}
+
+body {
+    background: #714343;
+    color: hsl(200, 100%, 90%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    text-align: center;
+  }
+
+.title {
+    font-size:75px;
+    color:#a7cfaa;
+    top: 0;
+    margin-bottom: 0.5rem;
+}
+
+.footer {
+    font-size: 10px;
+    bottom: 0;
+    color: white;
+}
+
+.title, .footer {
+    position: fixed;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+}
+
+.tuner-container { /* This makes the columns */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 10000px;
+}
+
+.circle-container {
+    display: flex;
+    position: relative;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background-color: black;
+    outline-style: solid;
+    outline-color: #0e9c18;
+    outline-width: 5px;
+    border-radius: 50%; /* This makes it a circle */
+    margin: 50px;
+}
+
+.octave-container {
+    font-size: 25px;
+    background-color: rgba(0, 255, 255, 0.422);
+    outline-style: solid;
+    outline-color: rgba(7, 7, 119, 0.748);
+    outline-width: 2px;
+    border-radius: 10%;
+    position: absolute;
+    top: 0.2rem;
+    right: 0.2rem;
+    padding: 0.4rem;
+    width: 20%;
+}
+
+.connection-status {
+    font-size: 20px;
+    outline-style: solid;
+    outline-width: 2px;
+    border-radius: 10%;
+    top: 0.2rem;
+    padding: 0.4rem;
+}
+
+.connection-status.on {
+    color: #08e7089a;
+    border-color: #128712fd;
+}
+
+.connection-status.off {
+    color: #ff4d4d8d;
+    border-color: #aa1e1efd;
+}
+
+.connection-button {
+    font-size: 20px;
+    outline-style: solid;
+    outline-width: 2px;
+    border-radius: 10%;
+    top: 0.2rem;
+    padding: 0.4rem;
+    fill: none;
+}
+
+.connection-button.on {
+    color: #08e7089a;
+    border-color: #128712fd;
+}
+
+.connection-button.off {
+    color: #ff4d4d8d;
+    border-color: #aa1e1efd;
+}
+
+.note-label {
+    font-size: 100px;
+}
