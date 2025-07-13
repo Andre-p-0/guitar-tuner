@@ -6,7 +6,6 @@
 .idea/
 *.swp
 *.swo
-.gitignore
 
 # Logs and temp files
 *.log
@@ -19,6 +18,7 @@
 # Python
 __pycache__/
 *.py[cod]
+*.*.py[cod]
 # py[cod] ignores files with extensions pyc pyo pyd
 venv/
 env/
@@ -27,3 +27,6 @@ requirements.txt
 
 # Node
 node_modules/
+
+# Other
+backend/src/__pycache__/tuner.cpython-313.pyc

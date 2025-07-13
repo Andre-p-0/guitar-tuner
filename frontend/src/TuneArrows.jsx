@@ -1,5 +1,5 @@
-export function TuneArrows( { image, transparency }) {
+export function TuneArrows( { image, opacity }) {
     return (
-        <img src={image} style={{ transparency:{transparency} }}/>
+        <img src={image} style={{ opacity }}/>
     )
 }
