@@ -44,6 +44,17 @@ body {
     max-width: 10000px;
 }
 
+.tuner-bg {
+    background-color: white;
+    border-radius: 1rem;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
 .circle-container {
     display: flex;
     position: relative;
