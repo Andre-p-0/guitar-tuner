@@ -6,6 +6,7 @@
 .idea/
 *.swp
 *.swo
+.gitignore
 
 # Logs and temp files
 *.log
