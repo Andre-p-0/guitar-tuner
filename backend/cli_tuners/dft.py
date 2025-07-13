@@ -1,10 +1,7 @@
 import numpy as np
 import sounddevice as sd
 import scipy.fftpack
-import os, threading, time
-
-socketio = None
-note_emit_count = 0 
+import time
 
 CONCERT_PITCH = 440
 ALL_NOTES = ["A","A#","B","C","C#","D","D#","E","F","F#","G","G#"]
@@ -17,9 +14,6 @@ SAMPLING_GAP = 1 / SAMPLING_FREQ # Length between two samples in seconds
 
 # State
 windowBuffer = [0 for _ in range(WINDOW_SIZE)] # Buffer to read samples into
-_stream = None
-_thread = None
-_running = False
 
 def find_closest_note(pitch):
     i = int(np.round(np.log2(pitch/CONCERT_PITCH)*12))
@@ -29,7 +23,6 @@ def find_closest_note(pitch):
 
 
 def callback(indata, frames, time, status):
-    print("callback triggered")
     global windowBuffer
     if status:
         print(status)
@@ -49,16 +42,8 @@ def callback(indata, frames, time, status):
 
         up_opacity, down_opacity = calculate_opacities(maxFreq, closestPitch)
 
-        if socketio:
-            note_only = ''.join(filter(lambda c: c.isalpha() or c == '#', closestNote))
-            octave = ''.join(filter(lambda c: c.isdigit(), closestNote))
-
-            socketio.emit("note-data", {
-                "note": note_only,
-                "octave": int(octave),
-                "up-opacity": up_opacity,
-                "down-opacity": down_opacity
-            }, namespace="/")
+        print(f"Closest note: {closestNote} {maxFreq:.1f}/{closestPitch:.1f}")
+        print(f"Up Opacity: {up_opacity}\nDown Oapcity: {down_opacity}\n\n")
     else:
         print('No input')
 
@@ -66,11 +51,15 @@ def callback(indata, frames, time, status):
 def calculate_opacities(freq, targetFreq):
     difference = targetFreq - freq
     tolerance = calculate_tuning_tolerance(targetFreq)
+    print(f"tolerance = {tolerance}")
+    print(f"difference = {difference}")
     if abs(difference) <= tolerance:
         return 0, 0
     else:
         max_difference = calculate_middle_of_semitone(difference, targetFreq)
+        print(f"max_difference = {max_difference}")
         opacity = abs(difference/max_difference)
+        print(opacity)
         if difference > 0:
             return opacity, 0
         else:
@@ -95,34 +84,13 @@ def calculate_tuning_tolerance(target_freq):
     tolerance = higher - target_freq
     return tolerance
 
-def _tuner_loop():
-    global _stream, _running
-    try:
-        with sd.InputStream(channels=1, callback=callback,
-                            blocksize=WINDOW_STEP,
-                            samplerate=SAMPLING_FREQ):
-            while _running:
-                time.sleep(0.1)
-    except Exception as e:
-        print(f"Tuner error: {e}")
+print("Starting Tuner :)")
 
-def start():
-    global _running, _thread
-    if not _running:
-        _running = True
-        _thread = threading.Thread(target=_tuner_loop)
-        _thread.start()
-        print("Tuner started")
-
-def stop():
-    global _running, _thread
-    if _running:
-        _running = False
-        if _thread is not None:
-            _thread.join()
-            _thread = None
-        print("Tuner stopped")
-
-def set_socketio(sio):
-    global socketio
-    socketio = sio
+try:
+    with sd.InputStream(channels=1, callback=callback,
+                        blocksize=WINDOW_STEP,
+                        samplerate=SAMPLING_FREQ):
+        while True:
+            time.sleep(0.1)
+except Exception as e:
+    print(f"Tuner error: {e}")

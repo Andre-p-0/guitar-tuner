@@ -9,19 +9,20 @@ export function Tuner() {
     const [noteData, setNoteData] = useState({
         note: '',
         octave: 0,
-        upTransparency: 0,
-        downTransparency: 0
+        upOpacity: 0,
+        downOpacity: 0
     })
 
     useEffect(() => {
         function handleNoteData(data) {
-            setNoteData({
+            const newState = {
                 note: data.note,
                 octave: data.octave,
-                upTransparency: data["up-transparency"],
-                downTransparency: data["down-transparency"]
-            });
-            console.log("Handling note data")
+                upOpacity: data["up-opacity"],
+                downOpacity: data["down-opacity"]
+            };
+            setNoteData(newState);
+            console.info("UpOpacity: " + newState.upOpacity + "\nDownOpacity: " + newState.downOpacity);
         }
     
         socket.on("note-data", handleNoteData);
@@ -37,9 +38,9 @@ export function Tuner() {
 
     return (
         <div className="tuner-container">
-            <TuneArrows image={greenArrow} transparency={noteData.upTransparency}/>
+            <TuneArrows image={greenArrow} opacity={noteData.upOpacity}/>
             <TunerCircle note={noteData.note} octave={noteData.octave} size="300px"/>
-            <TuneArrows image={redArrow} transparency={noteData.downTransparency}/>
+            <TuneArrows image={redArrow} opacity={noteData.downOpacity}/>
         </div>
     )
 }
