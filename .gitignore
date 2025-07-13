@@ -1,0 +1,28 @@
+# MacOS
+.DS_Store
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs and temp files
+*.log
+*.tmp
+*.bak
+*.pid
+.env
+.env.*   
+
+# Python
+__pycache__/
+*.py[cod]
+# py[cod] ignores files with extensions pyc pyo pyd
+venv/
+env/
+.venv/
+requirements.txt
+
+# Node
+node_modules/

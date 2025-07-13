@@ -4,7 +4,7 @@ import scipy.fftpack
 import os, threading, time
 
 socketio = None
-
+note_emit_count = 0 
 
 CONCERT_PITCH = 440
 ALL_NOTES = ["A","A#","B","C","C#","D","D#","E","F","F#","G","G#"]
@@ -29,6 +29,7 @@ def find_closest_note(pitch):
 
 
 def callback(indata, frames, time, status):
+    print("callback triggered")
     global windowBuffer
     if status:
         print(status)
@@ -46,19 +47,19 @@ def callback(indata, frames, time, status):
         maxFreq = maxInd * (SAMPLING_FREQ/WINDOW_SIZE) # Why?
         closestNote, closestPitch = find_closest_note(maxFreq)
 
-        os.system('cls' if os.name=='nt' else 'clear')
-
         up_transparency, down_transparency = transparencies(maxFreq, closestPitch)
 
         if socketio:
             note_only = ''.join(filter(lambda c: c.isalpha() or c == '#', closestNote))
             octave = ''.join(filter(lambda c: c.isdigit(), closestNote))
+
+
             socketio.emit("note-data", {
                 "note": note_only,
                 "octave": int(octave),
                 "up-transparency": up_transparency,
                 "down-transparency": down_transparency
-            })
+            }, namespace="/")
     else:
         print('No input')
 

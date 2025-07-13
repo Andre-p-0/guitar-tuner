@@ -11,16 +11,13 @@ export function Panel() {
         function onConnect() {
             setIsConnected(true);
             socket.emit('get-status');
-            console.log("connected")
+            console.log("socket is connected")
         }
         /* This runs when socket receives disconnect */
         function onDisconnect() {
             setIsConnected(false);
+            console.log("socket is disconnected")
         }
-
-        socket.on("connect_error", (err) => {
-            console.error("connection error:", err.message);
-        });
 
         function onStatus(data) {
             setIsOn(data.status === 'on');
@@ -29,9 +26,14 @@ export function Panel() {
 
         /* When socket receives connect run onConnect */
         socket.on('connect', onConnect);
-        /* When socket receives connect run onDisconnect */
+        /* When socket receives disconnect run onDisconnect */
         socket.on('disconnect', onDisconnect);
+        /* When socket receives status run onStatus */
         socket.on('status', onStatus);
+
+        socket.on("connect_error", (err) => {
+            console.error("connection error:", err.message);
+        });
 
         return () => {
             socket.off('connect', onConnect);
@@ -46,15 +48,16 @@ export function Panel() {
         const newStatus = isOn ? 'off' : 'on';
         setIsLoading(true);
         socket.emit('tuner-toggle', {status:newStatus});
+        console.log("Handling Toggle")
     }
 
     return (
         <div>
             <label className={`connection-status ${isConnected ? 'on' : 'off'}`}>
                 {isConnected ? 'Connected' : 'Disconnected'}
-                </label>
+            </label>
             <button className={`connection-button ${isConnected ? 'on' : 'off'}`} onClick={handleToggle} disabled={!isConnected || isLoading}>
-                {isConnected ? 'Please Wait...' : isOn ? 'Turn Off' : 'Turn On'}
+                {isConnected ? isOn ? "Turn Off" : "Turn On" : "Unavailable"}
             </button>
         </div>
     )

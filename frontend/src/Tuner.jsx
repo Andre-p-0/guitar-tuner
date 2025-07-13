@@ -21,9 +21,14 @@ export function Tuner() {
                 upTransparency: data["up-transparency"],
                 downTransparency: data["down-transparency"]
             });
+            console.log("Handling note data")
         }
     
         socket.on("note-data", handleNoteData);
+
+        socket.onAny((event, ...args) => {
+            console.log("Socket event received:", event, args);
+        });
     
         return () => {
             socket.off("note-data", handleNoteData);

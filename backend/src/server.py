@@ -1,13 +1,11 @@
 from flask import Flask
 from flask_socketio import SocketIO, emit
-import tuner, eventlet
+import tuner
 
 app = Flask(__name__)
-socketio = SocketIO(app, cors_allowed_origins="*") # Allows all origins for testing
+socketio = SocketIO(app, cors_allowed_origins="*", logger=True, engineio_logger=True, async_mode="threading") # Allows all origins for testing
 
 tuner_state = 'off'
-
-tuner.set_socketio(socketio)
 
 @app.route('/')
 def index():
@@ -16,6 +14,7 @@ def index():
 @socketio.on("connect")
 def handle_connect():
     print("Client connected")
+    tuner.set_socketio(socketio)
     emit("status", {"status": tuner_state})
 
 @socketio.on("disconnect")
@@ -34,16 +33,15 @@ def handle_tuner_toggle(data):
     if new_status == "on" and tuner_state == "off":
         tuner.start()  # Call the function to activate tuner
         tuner_state = "on"
-        print("Tuner started")
 
     elif new_status == "off" and tuner_state == "on":
         tuner.stop()  # Call the function to deactivate tuner
         tuner_state = "off"
-        print("Tuner stopped")
 
+    print(f"Tuner = {tuner_state}")
     emit("status", {"status": tuner_state}, broadcast=True)  # Notify all client 
 
-print("script run")
+print("Server on")
 
 if __name__ == "__main__":
-    socketio.run(app, host="0.0.0.0", port=5000)
+    socketio.run(app, host="0.0.0.0", port=5000, use_reloader=False, )
