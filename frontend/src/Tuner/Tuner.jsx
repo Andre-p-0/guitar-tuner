@@ -1,8 +1,8 @@
-import greenArrow from "./Assets/greenArrow.png"
-import redArrow from "./Assets/redArrow.png"
+import greenArrow from "../Assets/greenArrow.png"
+import redArrow from "../Assets/redArrow.png"
 import { TunerCircle } from "./TunerCircle"
 import { TuneArrows } from "./TuneArrows"
-import { socket } from "./utils/utils"
+import { socket } from "../utils/utils"
 import { useState, useEffect } from 'react'
 
 export function Tuner() {
@@ -38,9 +38,11 @@ export function Tuner() {
 
     return (
         <div className="tuner-container">
-            <TuneArrows image={greenArrow} opacity={noteData.upOpacity}/>
-            <TunerCircle note={noteData.note} octave={noteData.octave} size="300px"/>
-            <TuneArrows image={redArrow} opacity={noteData.downOpacity}/>
+            <div className="tuner-bg">
+                <TuneArrows image={greenArrow} opacity={noteData.upOpacity}/>
+                <TunerCircle note={noteData.note} octave={noteData.octave} size="300px"/>
+                <TuneArrows image={redArrow} opacity={noteData.downOpacity}/>
+            </div>
         </div>
     )
 }

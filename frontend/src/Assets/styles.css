@@ -4,7 +4,7 @@
 }
 
 body {
-    background: #706a67;
+    background: #400203d0;
     color: hsl(200, 100%, 90%);
     display: flex;
     flex-direction: column;
@@ -14,6 +14,12 @@ body {
     margin: 0;
     text-align: center;
   }
+
+.header {
+    display:flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+}
 
 .title {
     font-size:75px;
@@ -36,41 +42,8 @@ body {
     padding: 10px;
 }
 
-.tuner-container { /* This makes the columns */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    max-width: 10000px;
-}
-
-.circle-container {
-    display: flex;
-    position: relative;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    background-color: black;
-    outline-style: solid;
-    outline-color: #0e9c18;
-    outline-width: 5px;
-    border-radius: 50%; /* This makes it a circle */
-    margin: 50px;
-}
-
-.octave-container {
-    font-size: 25px;
-    background-color: rgba(0, 255, 255, 0.422);
-    outline-style: solid;
-    outline-color: rgba(7, 7, 119, 0.748);
-    outline-width: 2px;
-    border-radius: 10%;
-    position: absolute;
-    top: 0.2rem;
-    right: 0.2rem;
-    padding: 0.4rem;
-    width: 20%;
+.button-panel {
+    margin-bottom: 4rem;
 }
 
 .connection-status {
@@ -110,6 +83,53 @@ body {
 .connection-button.off {
     color: #ff4d4d8d;
     border-color: #aa1e1efd;
+}
+
+.tuner-container { /* This makes the columns */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tuner-bg {
+    background-color: rgba(0, 0, 0, 0.73);
+    border-radius: 1rem;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.circle-container {
+    display: flex;
+    position: relative;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background-color: black;
+    outline-style: solid;
+    outline-color: #0e9c18;
+    outline-width: 5px;
+    border-radius: 50%; /* This makes it a circle */
+    margin-top: 40px;
+    margin-bottom: 40px;
+}
+
+.octave-container {
+    font-size: 25px;
+    background-color: rgba(23, 173, 173, 0.899);
+    outline-style: solid;
+    outline-color: rgba(7, 7, 119, 0.748);
+    outline-width: 2px;
+    border-radius: 10%;
+    position: absolute;
+    top: 0.2rem;
+    right: 0.2rem;
+    padding: 0.4rem;
+    width: 20%;
 }
 
 .note-label {

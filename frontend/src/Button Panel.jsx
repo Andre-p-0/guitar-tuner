@@ -52,7 +52,7 @@ export function Panel() {
     }
 
     return (
-        <div>
+        <div className='button-panel'>
             <label className={`connection-status ${isConnected ? 'on' : 'off'}`}>
                 {isConnected ? 'Connected' : 'Disconnected'}
             </label>
