@@ -15,6 +15,12 @@ body {
     text-align: center;
   }
 
+.header {
+    display:flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+}
+
 .title {
     font-size:75px;
     color:#a7cfaa;
@@ -34,6 +40,49 @@ body {
     width: 100%;
     text-align: center;
     padding: 10px;
+}
+
+.button-panel {
+    margin-bottom: 4rem;
+}
+
+.connection-status {
+    font-size: 20px;
+    outline-style: solid;
+    outline-width: 2px;
+    border-radius: 10%;
+    top: 0.2rem;
+    padding: 0.4rem;
+}
+
+.connection-status.on {
+    color: #08e7089a;
+    border-color: #128712fd;
+}
+
+.connection-status.off {
+    color: #ff4d4d8d;
+    border-color: #aa1e1efd;
+}
+
+.connection-button {
+    font-size: 20px;
+    outline-style: solid;
+    outline-width: 2px;
+    border-radius: 10%;
+    top: 0.2rem;
+    padding: 0.4rem;
+    fill: none;
+}
+
+.connection-button.on {
+    color: #08e7089a;
+    border-color: #128712fd;
+}
+
+.connection-button.off {
+    color: #ff4d4d8d;
+    border-color: #aa1e1efd;
 }
 
 .tuner-container { /* This makes the columns */
@@ -81,45 +130,6 @@ body {
     right: 0.2rem;
     padding: 0.4rem;
     width: 20%;
-}
-
-.connection-status {
-    font-size: 20px;
-    outline-style: solid;
-    outline-width: 2px;
-    border-radius: 10%;
-    top: 0.2rem;
-    padding: 0.4rem;
-}
-
-.connection-status.on {
-    color: #08e7089a;
-    border-color: #128712fd;
-}
-
-.connection-status.off {
-    color: #ff4d4d8d;
-    border-color: #aa1e1efd;
-}
-
-.connection-button {
-    font-size: 20px;
-    outline-style: solid;
-    outline-width: 2px;
-    border-radius: 10%;
-    top: 0.2rem;
-    padding: 0.4rem;
-    fill: none;
-}
-
-.connection-button.on {
-    color: #08e7089a;
-    border-color: #128712fd;
-}
-
-.connection-button.off {
-    color: #ff4d4d8d;
-    border-color: #aa1e1efd;
 }
 
 .note-label {
