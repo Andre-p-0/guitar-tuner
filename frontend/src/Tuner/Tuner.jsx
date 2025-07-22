@@ -1,8 +1,8 @@
-import greenArrow from "./Assets/greenArrow.png"
-import redArrow from "./Assets/redArrow.png"
+import greenArrow from "../Assets/greenArrow.png"
+import redArrow from "../Assets/redArrow.png"
 import { TunerCircle } from "./TunerCircle"
 import { TuneArrows } from "./TuneArrows"
-import { socket } from "./utils/utils"
+import { socket } from "../utils/utils"
 import { useState, useEffect } from 'react'
 
 export function Tuner() {

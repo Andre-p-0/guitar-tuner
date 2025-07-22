@@ -1,5 +1,5 @@
-import { Tuner } from './Tuner'
-import { Panel } from './panel'
+import { Tuner } from './Tuner/Tuner'
+import { Panel } from './Button Panel'
 import "./Assets/styles.css"
 
 function App() {
