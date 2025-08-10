@@ -32,8 +32,8 @@ export function Tuner() {
         }
 
         function onStatus(data) {
-            console.log("Clearing Tuner")
             if (data.status === "off") {
+                console.log("Clearing Tuner")
                 setNoteData({
                     "note": "",
                     "octave": "",

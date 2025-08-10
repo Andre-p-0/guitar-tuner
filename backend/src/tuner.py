@@ -1,66 +1,142 @@
+'''
+Guitar tuner script based on the Harmonic Product Spectrum (HPS)
+
+MIT License
+Copyright (c) 2021 chciken
+'''
+
+import copy, os, time, threading, scipy.fftpack
 import numpy as np
 import sounddevice as sd
-import scipy.fftpack
-import os, threading, time
 
-socketio = None
-note_emit_count = 0 
+# General settings that can be changed by the user
+SAMPLE_FREQ = 48000 # sample frequency in Hz
+WINDOW_SIZE = 48000 # window size of the DFT in samples
+WINDOW_STEP = 12000 # step size of window
+NUM_HPS = 5 # max number of harmonic product spectrums
+POWER_THRESH = 1e-6 # tuning is activated if the signal power exceeds this threshold
+CONCERT_PITCH = 440 # defining a1
+WHITE_NOISE_THRESH = 0.2 # everything under WHITE_NOISE_THRESH*avg_energy_per_freq is cut off
 
-CONCERT_PITCH = 440
+WINDOW_T_LEN = WINDOW_SIZE / SAMPLE_FREQ # length of the window in seconds
+SAMPLE_T_LENGTH = 1 / SAMPLE_FREQ # length between two samples in seconds
+DELTA_FREQ = SAMPLE_FREQ / WINDOW_SIZE # frequency step width of the interpolated DFT
+OCTAVE_BANDS = [50, 100, 200, 400, 800, 1600, 3200, 6400, 12800, 25600]
+
 ALL_NOTES = ["A","A#","B","C","C#","D","D#","E","F","F#","G","G#"]
 
-SAMPLING_FREQ = 44100 # sample frequency Hz or Samples per second
-WINDOW_SIZE = 44100 # Size of window to use DFT on
-WINDOW_STEP = 21050 # How many samples ahead is next frequency
-WINDOW_LENGTH_S = WINDOW_SIZE / SAMPLING_FREQ # Window Length in seconds
-SAMPLING_GAP = 1 / SAMPLING_FREQ # Length between two samples in seconds
-
-# State
-windowBuffer = [0 for _ in range(WINDOW_SIZE)] # Buffer to read samples into
 _stream = None
 _thread = None
 _running = False
 
 def find_closest_note(pitch):
-    i = int(np.round(np.log2(pitch/CONCERT_PITCH)*12))
-    closest_note = ALL_NOTES[i%12] + str(4 + (i + 9) // 12)
-    closest_pitch = CONCERT_PITCH*2**(i/12)
-    return closest_note, closest_pitch
+  """
+  This function finds the closest note for a given pitch
+  Parameters:
+    pitch (float): pitch given in hertz
+  Returns:
+    closest_note (str): e.g. a, g#, ..
+    closest_pitch (float): pitch of the closest note in hertz
+  """
+  i = int(np.round(np.log2(pitch/CONCERT_PITCH)*12))
+  closest_note = ALL_NOTES[i%12] + str(4 + (i + 9) // 12)
+  closest_pitch = CONCERT_PITCH*2**(i/12)
+  return closest_note, closest_pitch
 
-
+HANN_WINDOW = np.hanning(WINDOW_SIZE)
 def callback(indata, frames, time, status):
-    print("callback triggered")
-    global windowBuffer
-    if status:
-        print(status)
-    if any(indata):
-        # indata[:, 0] extracts all samples from channel 0
-        windowBuffer = np.concatenate((windowBuffer, indata[:, 0]))
-        windowBuffer = windowBuffer[len(indata[:, 0]):]
-        magnitudeSpec = abs(scipy.fftpack.fft(windowBuffer)[:len(windowBuffer)//2])
+  """
+  Callback function of the InputStream method.
+  That's where the magic happens ;)
+  """
+  # define static variables
+  if not hasattr(callback, "window_samples"):
+    callback.window_samples = [0 for _ in range(WINDOW_SIZE)]
+  if not hasattr(callback, "noteBuffer"):
+    callback.noteBuffer = ["1","2"]
 
-        # This blocks out the 8th string (E1 = 41.2Hz, F#1 = 46.25Hz)
-        for i in range(int(62/SAMPLING_FREQ/WINDOW_SIZE)):
-            magnitudeSpec[i] # Suppresses mains hum
+  if status:
+    print(status)
+    return
+  if any(indata):
+    callback.window_samples = np.concatenate((callback.window_samples, indata[:, 0])) # append new samples
+    callback.window_samples = callback.window_samples[len(indata[:, 0]):] # remove old samples
 
-        maxInd = np.argmax(magnitudeSpec) # Finds the maximum frequency in sample
-        maxFreq = maxInd * (SAMPLING_FREQ/WINDOW_SIZE) # Why?
-        closestNote, closestPitch = find_closest_note(maxFreq)
+    # skip if signal power is too low
+    signal_power = (np.linalg.norm(callback.window_samples, ord=2)**2) / len(callback.window_samples)
+    if signal_power < POWER_THRESH:
+      os.system('cls' if os.name=='nt' else 'clear')
+      print("Closest note: ...")
+      return
 
-        up_opacity, down_opacity = calculate_opacities(maxFreq, closestPitch)
+    # avoid spectral leakage by multiplying the signal with a hann window
+    hann_samples = callback.window_samples * HANN_WINDOW
+    magnitude_spec = abs(scipy.fftpack.fft(hann_samples)[:len(hann_samples)//2])
 
-        if socketio:
-            note_only = ''.join(filter(lambda c: c.isalpha() or c == '#', closestNote))
-            octave = ''.join(filter(lambda c: c.isdigit(), closestNote))
+    # supress mains hum, set everything below 62Hz to zero
+    for i in range(int(62/DELTA_FREQ)):
+      magnitude_spec[i] = 0
 
-            socketio.emit("note-data", {
-                "note": note_only,
-                "octave": int(octave),
-                "up-opacity": up_opacity,
-                "down-opacity": down_opacity
-            }, namespace="/")
-    else:
-        print('No input')
+    # calculate average energy per frequency for the octave bands
+    # and suppress everything below it
+    for j in range(len(OCTAVE_BANDS)-1):
+      ind_start = int(OCTAVE_BANDS[j]/DELTA_FREQ)
+      ind_end = int(OCTAVE_BANDS[j+1]/DELTA_FREQ)
+      ind_end = ind_end if len(magnitude_spec) > ind_end else len(magnitude_spec)
+      avg_energy_per_freq = (np.linalg.norm(magnitude_spec[ind_start:ind_end], ord=2)**2) / (ind_end-ind_start)
+      avg_energy_per_freq = avg_energy_per_freq**0.5
+      for i in range(ind_start, ind_end):
+        magnitude_spec[i] = magnitude_spec[i] if magnitude_spec[i] > WHITE_NOISE_THRESH*avg_energy_per_freq else 0
+
+    # interpolate spectrum
+    mag_spec_ipol = np.interp(np.arange(0, len(magnitude_spec), 1/NUM_HPS), np.arange(0, len(magnitude_spec)),
+                              magnitude_spec)
+    mag_spec_ipol = mag_spec_ipol / np.linalg.norm(mag_spec_ipol, ord=2) #normalize it
+
+    hps_spec = copy.deepcopy(mag_spec_ipol)
+
+    # calculate the HPS
+    for i in range(NUM_HPS):
+      tmp_hps_spec = np.multiply(hps_spec[:int(np.ceil(len(mag_spec_ipol)/(i+1)))], mag_spec_ipol[::(i+1)])
+      if not any(tmp_hps_spec):
+        break
+      hps_spec = tmp_hps_spec
+
+    max_ind = np.argmax(hps_spec)
+    max_freq = max_ind * (SAMPLE_FREQ/WINDOW_SIZE) / NUM_HPS
+
+    closest_note, closest_pitch = find_closest_note(max_freq)
+    max_freq = round(max_freq, 1)
+    closest_pitch = round(closest_pitch, 1)
+
+    callback.noteBuffer.insert(0, closest_note) # note that this is a ringbuffer
+    callback.noteBuffer.pop()
+
+    up_opacity, down_opacity = calculate_opacities(max_freq, closest_pitch)
+    note_only = ''.join(filter(lambda c: c.isalpha() or c == '#', closest_note))
+    octave = ''.join(filter(lambda c: c.isdigit(), closest_note))
+    if socketio:
+      os.system('cls' if os.name=='nt' else 'clear')
+      if callback.noteBuffer.count(callback.noteBuffer[0]) == len(callback.noteBuffer):
+        #print(f"Closest note: {closest_note} {max_freq}/{closest_pitch}")
+        socketio.emit("note-data", {
+           "note": note_only,
+           "octave": int(octave),
+           "up-opacity": up_opacity,
+           "down-opacity": down_opacity
+        }, namespace="/")
+      else:
+        #print(f"Closest note: ...")
+        socketio.emit("note-data", {
+           "note": "",
+           "octave": 0,
+           "up-opacity": 0,
+           "down-opacity": 0
+        }, namespace="/")
+
+  else:
+    print('no input')
+
 
 # Sets the opacity values for the tune up and down arrows
 def calculate_opacities(freq, targetFreq):
@@ -90,21 +166,20 @@ def calculate_middle_of_semitone(difference, target_freq):
 def calculate_tuning_tolerance(target_freq):
     # Calculates 10 cents above the target frequency
     # 1 cent = 1/100th of a semitone
-    higher = target_freq * (2**(1/120))
+    higher = target_freq * (2**(1/240))
     # Difference between the higher tolerated frequency and actual target frequency
     tolerance = higher - target_freq
     return tolerance
 
 def _tuner_loop():
-    global _stream, _running
-    try:
-        with sd.InputStream(channels=1, callback=callback,
-                            blocksize=WINDOW_STEP,
-                            samplerate=SAMPLING_FREQ):
-            while _running:
-                time.sleep(0.1)
-    except Exception as e:
-        print(f"Tuner error: {e}")
+  global _stream, _running
+  try:
+    print("Starting HPS guitar tuner...")
+    with sd.InputStream(channels=1, callback=callback, blocksize=WINDOW_STEP, samplerate=SAMPLE_FREQ):
+      while _running:
+        time.sleep(0.5)
+  except Exception as exc:
+    print(str(exc))
 
 def start():
     global _running, _thread
