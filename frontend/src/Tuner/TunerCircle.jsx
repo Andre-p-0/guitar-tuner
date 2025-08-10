@@ -1,8 +1,8 @@
-export function TunerCircle( { size, note, octave}) {
+export function TunerCircle( { tuneState, note, octave}) {
     return (
-        <div className="circle-container" style={{
-            width: size,
-            height: size,
+        <div className={`circle-container ${tuneState}`} style={{
+            width: 300,
+            height: 300,
         }}>
             <label className="octave-container">{octave}</label>
             <label className="note-label">{note}</label>

@@ -7,6 +7,7 @@ export function Panel() {
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
+        console.log("Tuner Button Panel useEffect Run")
         /* This runs when socket receives connect */
         function onConnect() {
             setIsConnected(true);
@@ -20,15 +21,16 @@ export function Panel() {
         }
 
         function onStatus(data) {
+            console.log("Received on status")
             setIsOn(data.status === 'on');
             setIsLoading(false);
         }
 
-        /* When socket receives connect run onConnect */
+        /* When socket receives connect - run onConnect */
         socket.on('connect', onConnect);
-        /* When socket receives disconnect run onDisconnect */
+        /* When socket receives disconnect - run onDisconnect */
         socket.on('disconnect', onDisconnect);
-        /* When socket receives status run onStatus */
+        /* When socket receives status - run onStatus */
         socket.on('status', onStatus);
 
         socket.on("connect_error", (err) => {
@@ -57,7 +59,7 @@ export function Panel() {
                 {isConnected ? 'Connected' : 'Disconnected'}
             </label>
             <button className={`connection-button ${isConnected ? 'on' : 'off'}`} onClick={handleToggle} disabled={!isConnected || isLoading}>
-                {isConnected ? isOn ? "Turn Off" : "Turn On" : "Unavailable"}
+                {isConnected ? isOn ? "On" : "Off" : "Unavailable"}
             </button>
         </div>
     )

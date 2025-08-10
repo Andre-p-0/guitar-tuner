@@ -1,7 +1,6 @@
 import greenArrow from "../Assets/greenArrow.png"
 import redArrow from "../Assets/redArrow.png"
 import { TunerCircle } from "./TunerCircle"
-import { TuneArrows } from "./TuneArrows"
 import { socket } from "../utils/utils"
 import { useState, useEffect } from 'react'
 
@@ -12,9 +11,11 @@ export function Tuner() {
         upOpacity: 0,
         downOpacity: 0
     })
+    const [tuneState, setTuneState] = useState("off")
 
     useEffect(() => {
         function handleNoteData(data) {
+            console.log("Handling note data")
             const newState = {
                 note: data.note,
                 octave: data.octave,
@@ -22,14 +23,30 @@ export function Tuner() {
                 downOpacity: data["down-opacity"]
             };
             setNoteData(newState);
-            console.info("UpOpacity: " + newState.upOpacity + "\nDownOpacity: " + newState.downOpacity);
+            if (data["up-opacity"] == 0 && data["down-opacity"] == 0) {
+                setTuneState("in-tune")
+            }
+            else {
+                setTuneState("out-tune")
+            }
+        }
+
+        function onStatus(data) {
+            console.log("Clearing Tuner")
+            if (data.status === "off") {
+                setNoteData({
+                    "note": "",
+                    "octave": "",
+                    "upOpacity": 0,
+                    "downOpacity": 0
+                })
+                setTuneState("off")
+            }
         }
     
         socket.on("note-data", handleNoteData);
 
-        socket.onAny((event, ...args) => {
-            console.log("Socket event received:", event, args);
-        });
+        socket.on("status", onStatus)
     
         return () => {
             socket.off("note-data", handleNoteData);
@@ -39,9 +56,9 @@ export function Tuner() {
     return (
         <div className="tuner-container">
             <div className="tuner-bg">
-                <TuneArrows image={greenArrow} opacity={noteData.upOpacity}/>
-                <TunerCircle note={noteData.note} octave={noteData.octave} size="300px"/>
-                <TuneArrows image={redArrow} opacity={noteData.downOpacity}/>
+                <img src={greenArrow} style={{ opacity: noteData.upOpacity }} height={150}/>
+                <TunerCircle tuneState={tuneState} note={noteData.note} octave={noteData.octave}/>
+                <img src={redArrow} style={{ opacity: noteData.downOpacity }} height={150}/>
             </div>
         </div>
     )
