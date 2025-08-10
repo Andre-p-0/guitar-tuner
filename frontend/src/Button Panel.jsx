@@ -21,7 +21,7 @@ export function Panel() {
         }
 
         function onStatus(data) {
-            console.log("Received on status")
+            console.log("Received Status: " + data.status)
             setIsOn(data.status === 'on');
             setIsLoading(false);
         }
