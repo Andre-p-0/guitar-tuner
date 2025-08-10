@@ -118,6 +118,21 @@ body {
     margin-bottom: 40px;
 }
 
+.circle-container.in-tune {
+    outline-color: #0e9c18;
+    outline-width: 10px;
+}
+
+.circle-container.out-tune {
+    outline-color: #e71616;
+    outline-width: 5px;
+}
+
+.circle-container.off {
+    outline-color: #a03d7b;
+    outline-width: 3px;
+}
+
 .octave-container {
     font-size: 25px;
     background-color: rgba(23, 173, 173, 0.899);
